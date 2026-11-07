@@ -1,0 +1,40 @@
+
+name: KM EDITOR APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build APK
+        run: |
+          unzip -o KM_EDITOR_PHONE_APK_BUILD.zip -d project
+          cd project
+          npm install
+          npm install @capacitor/core @capacitor/android
+          npm install -D @capacitor/cli
+          npm run build
+          npx cap add android
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KM-EDITOR-APK
+          path: project/android/app/build/outputs/apk/debug/app-debug.apk
